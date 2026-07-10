@@ -1,0 +1,11 @@
+# Display Names (Human-Friendly)
+driver_name: Askar WAF
+categories: ["focusers"]
+manufacturer_name: Askar
+
+# Additional Metadata
+website: https://gb.sharpstar-optics.com/
+executable: indi_askar_waf_focus
+platforms: Linux, BSD, OSX
+author: Jiaxing Ruixing Optical Instrument Co., Ltd.
+version: 1.0
