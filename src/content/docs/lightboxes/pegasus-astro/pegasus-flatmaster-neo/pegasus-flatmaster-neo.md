@@ -1,24 +1,24 @@
 ---
 title: Pegasus FlatMaster Neo
 categories: ["lightboxes", "dustcaps"]
-description: Gemini SnapCap
+description: Pegasus Astro FlatMaster Neo flat field panel driver
 thumbnail: ./pegasus-flatmaster-neo.webp
 ---
 
 # Pegasus FlatMaster Neo — INDI Auxiliary Driver
 
-The Pegasus FlatMaster Neo driver provides INDI support for the Pegasus Astro FlatMaster Neo flat field panel and environmental sensors.
+This driver supports the Pegasus Astro FlatMaster Neo flat field panel, dust cap control, dew management, environmental sensors, and network/hotspot features via INDI.
 
 ## Overview
 
-This driver implements the following INDI interfaces:
+Implemented INDI interfaces:
 
 - `AUX_INTERFACE`
 - `LIGHTBOX_INTERFACE`
 - `DUSTCAP_INTERFACE`
 - `WEATHER_INTERFACE`
 
-The driver communicates with the FlatMaster Neo over a USB serial link. It exposes lightbox control, dust cap control, dew heater control, weather sensors, and device status reporting.
+The FlatMaster Neo communicates over USB serial. The driver exposes lightbox on/off and dimming, cap park/unpark and angle control, dew heater and auto dew, temperature/humidity/dew point monitoring, and WiFi/hotspot management.
 
 ## Supported Hardware
 
@@ -31,13 +31,13 @@ The driver communicates with the FlatMaster Neo over a USB serial link. It expos
 - Family: Lightbox, Dustcap
 - Manufacturer: Pegasus Astro
 - Platforms: Linux, BSD, macOS
-- Version: 1.0
+- Version: 1.2
 
 ## Installing & Running
 
-The driver is built as part of the INDI core package.
+The driver is included in the INDI core package.
 
-To run the driver manually:
+Run it manually using:
 
 ```bash
 indiserver -v indi_pegasus_flatmaster_neo
@@ -49,117 +49,163 @@ If you build only this driver from the INDI source tree, the build target is als
 
 ### USB Serial
 
-The FlatMaster Neo uses a USB serial interface. The driver uses the connection plugin to scan serial ports and match devices whose system name contains `FlatMaster`.
+The FlatMaster Neo uses a USB serial connection. The driver scans serial ports and matches devices whose system name contains `FlatMaster`.
 
 - Default baud rate: `9600`
-- Connection type supported: USB serial only
-- Network / Bluetooth: not supported by this driver
+- Supported connection: USB serial only
+- Network / Bluetooth: not used for the serial interface
 
 ### First Time Connection
 
 1. Power on the FlatMaster Neo.
-2. Start the driver in an INDI client or manually with `indiserver -v indi_pegasus_flatmaster_neo`.
-3. In the client connection panel, select the detected serial port or allow automatic scanning.
+2. Start the driver from an INDI client or manually with `indiserver -v indi_pegasus_flatmaster_neo`.
+3. Select the detected serial port or allow automatic scanning.
 4. Click Connect.
 
-On successful connection, the driver performs a handshake using `F#` and expects the response to contain `FMNEO`.
+The driver handshakes with the device using `F#` and expects a response containing `FMNEO`.
 
 ## Features
 
-- Lightbox power on/off
-- Adjustable lightbox brightness (0–100)
-- Dust cap open/close and angle control (0–270°)
-- Dew heater control (0–100%)
-- Auto dew mode on/off
-- Calibration offsets for temperature and humidity
-- Real-time sensor values for temperature, humidity, and dew point
-- Device status overview via FlatMaster Neo status query
+- Lightbox on/off and brightness control (0–100)
+- Dust cap park/unpark and target angle control (0–270°)
+- Dew heater power control (0–100%)
+- Auto dew enable/disable
+- Dew aggressiveness level (0–10)
+- Dew threshold adjustment (1–50)
+- Save dew settings to device memory
+- Auto-close cap control
+- Temperature, humidity, and dew point sensors
+- Temperature and humidity calibration offsets
+- Device status overview, including light intensity, cap state, dew state, and light sensor readings
+- Firmware version reporting
+- Device uptime reporting
+- Remote device reboot
+- WiFi channel configuration
+- Hotspot enable/disable and credentials management
+- WiFi network scan and connection
+- WiFi factory reset
 
 ## Driver Controls
 
 ### Firmware
 
-The driver exposes a `Firmware` text property showing the reported firmware version.
-
+The driver exposes a read-only `Firmware` property showing the reported firmware version.
 
 ![](./images/main.webp)
 
 ### Light Box
 
-The `Light Box` tab exposes:
+The `Light Box` tab includes:
 
 - `On/Off`
 - `Brightness`
 
-The driver sends commands `FE:0` / `FE:1` for enable/disable and `FL:<value>` for brightness.
+Control commands:
+
+- `FE:0` — disable lightbox
+- `FE:1` — enable lightbox
+- `FL:<value>` — set brightness
 
 ![](./images/lightbox.webp)
 
 ### Dust Cap
 
-The `Dust Cap` tab exposes:
+The `Dust Cap` tab includes:
 
 - `Open`
 - `Close`
 - `Angle`
 
-The driver sends `FS:0` to park the cap and `FS:1` to unpark/open it.
+Control commands:
+
+- `FS:0` — park the cap
+- `FS:1` — unpark/open the cap
+- `CD:<angle>` — set target opening angle
 
 ![](./images/dust_cap.webp)
 
 ### Dew Control
 
-The `Dew Control` tab exposes:
+The `Dew Control` tab includes:
 
 - `Dew Heater` percentage
 - `Auto Dew` enable/disable
+- `Dew Aggressiveness` level (0–10)
+- `Dew Threshold` (1–50)
+- `Save Dew Settings`
 
-The driver sends `DH:<value>` for heater power and `PD:0` / `PD:1` for auto dew.
+Control commands:
+
+- `DH:<value>` — set heater power
+- `PD:0` / `PD:1` — disable/enable auto dew
+- `DA:<level>` — set dew aggressiveness
+- `DT:<value>` — set dew threshold
+- `DSTR` — save dew settings
 
 ![](./images/dew_control.webp)
 
 ### Environment / Weather
 
-The `Environment` tab exposes:
+The `Environment` tab includes:
 
 - `Temperature`
 - `Humidity`
 - `Dew Point`
-- `Calibration Offsets` for temperature and humidity
+- `Temperature Offset`
+- `Humidity Offset`
 
-The driver reads weather data from the device using `ES` and reads/saves offsets with `CR`, `CT:<value>`, and `CH:<value>`.
+The driver queries weather data with `ES` and reads/writes offsets with:
+
+- `CR` — read calibration offsets
+- `CT:<value>` — set temperature offset
+- `CH:<value>` — set humidity offset
 
 ![](./images/environment.webp)
 
 ### Device Status
 
-The driver publishes an overview status property showing:
+The `Overview` tab shows:
 
 - Light intensity
 - Light active state
 - Cap target angle
 - Cap actual angle
 - Cap status
-- Auxiliary status values from the FlatMaster Neo response
+- Dew power
+- Auto dew active state
+- Dew aggressiveness
+- Light sensor
+- Uptime
 
 ![](./images/overview.webp)
 
+### Network
+
+The `Network` tab includes WiFi and hotspot controls:
+
+- `AC` / `AC:<channel>` — read/write WiFi channel
+- `A?` / `AE:0` / `AE:1` — hotspot status and enable/disable
+- `AL` / `AN:<ssid>` / `AP:<password>` — hotspot credentials
+- `WI` — current WiFi connection status
+- `WS` — WiFi network scan
+- `WN:<ssid>` / `WP:<password>` — connect to WiFi
+- `WZ` — WiFi factory reset
+
 ## Operation
 
-- Connect the device via USB.
-- Use the `Light Box` controls to turn the panel on/off and adjust brightness.
-- Use the `Dust Cap` controls to set the cap angle or park/unpark the cover.
-- Use the `Dew Control` panel to change heater power and toggle automatic dew control.
-- Monitor temperature, humidity, and dew point in the `Environment` tab.
-- Adjust the provided temperature and humidity offsets if the readings differ from a reference sensor.
+- Connect the FlatMaster Neo via USB and start the driver.
+- Use `Light Box` to control panel power and brightness.
+- Use `Dust Cap` to park, unpark, or set the cap angle.
+- Use `Dew Control` to manage heater power, auto dew, aggressiveness, threshold, and save settings.
+- Monitor temperature, humidity, and dew point in `Environment`.
+- Apply calibration offsets when sensor readings differ from a reference.
+- Use `Network` for WiFi and hotspot management if supported by your firmware.
+- Use `Overview` to verify device state, uptime, and reboot when needed.
 
 ## Troubleshooting
 
-- If the driver fails to connect, verify the FlatMaster Neo is powered and visible as a serial device.
+- If the driver cannot connect, verify the FlatMaster Neo is powered and visible as a serial device.
 - Ensure no other application is using the same serial port.
-- Check that the driver handshake returns `FMNEO`; if not, the device may not be a supported FlatMaster Neo.
-- If properties do not update, reconnect and verify the device responds to `FA`, `ES`, and `CR` queries.
-
-## Notes
-
-- The driver is intended for use with INDI clients such as INDI Control Panel, KStars/Ekos, and other INDI-compatible tools.
+- Confirm the handshake returns `FMNEO`; otherwise the connected device may not be supported.
+- If values do not update, reconnect and ensure the device responds to `FA`, `ES`, and `CR`.
+- For network issues, check SSID, password, and WiFi availability.
