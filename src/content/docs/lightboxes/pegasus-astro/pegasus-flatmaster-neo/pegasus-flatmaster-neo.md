@@ -191,6 +191,8 @@ The `Network` tab includes WiFi and hotspot controls:
 - `WN:<ssid>` / `WP:<password>` — connect to WiFi
 - `WZ` — WiFi factory reset
 
+![](./images/network.webp)
+
 ## Operation
 
 - Connect the FlatMaster Neo via USB and start the driver.
